@@ -1,11 +1,9 @@
 ﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
-using System.IO;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using static System.Console;
+using static System.IO.Path;
 
 namespace EXCoreDemo.AccessToken
 {
@@ -53,20 +51,11 @@ namespace EXCoreDemo.AccessToken
                     break;
 
                 case AuthenticationMethod.Cert:
-                    var assembly = Assembly.GetExecutingAssembly();
-                    var certName = "EXCoreDemo.AccessToken.Resources.EXCoreDemoWeb.pfx";
-                    string certContent = "";
-
-                    using (Stream stream = assembly.GetManifestResourceStream(certName))
-                    using (StreamReader reader = new StreamReader(stream))
-                    {
-                         certContent = await reader.ReadToEndAsync();
-                    }
+                    var certFile =  Combine(Environment.CurrentDirectory, "Resources", "EXCoreDemoWeb.pfx");
 
                     X509Certificate2 cert = new X509Certificate2(
-                        Encoding.Default.GetBytes(certContent),
-                        WebAppConstants.CERT_PASSWORD,
-                        X509KeyStorageFlags.MachineKeySet);
+                        certFile,
+                        WebAppConstants.CERT_PASSWORD);
 
                     ClientAssertionCertificate cac = new ClientAssertionCertificate(
                         WebAppConstants.CLIENT_ID, cert);
@@ -88,18 +77,57 @@ namespace EXCoreDemo.AccessToken
         /// Get Token for Native Application.
         /// </summary>
         /// <returns>Token for native application.</returns>
-        public static async Task<string> GetTokenForNativeApplication(string resource)
+        public static async Task<string> GetTokenForNativeApplication(string resource, AuthenticationMethod auMethod)
         {
             string tokenForNativeApplication = string.Empty;
 
             AuthenticationContext authenticationContext = new AuthenticationContext(NativeAppConstants.AUTH_STRING, false);
-            // Config for OAuth client credentials 
-            ClientCredential clientCred = new ClientCredential(NativeAppConstants.CLIENT_ID,
-                NativeAppConstants.CLIENT_SECRET);
-            AuthenticationResult authenticationResult =
-                await authenticationContext.AcquireTokenAsync(resource,
-                    clientCred);
-            tokenForNativeApplication = authenticationResult.AccessToken;
+
+            switch (auMethod)
+            {
+                case AuthenticationMethod.Password:
+                    /******************************************************************************************
+                     * AcquireToken(string resource, ClientCredential clientCredential) works with Web Apps. 
+                     * It is easier to setup and is easy to use once setup. 
+                     * Native Client Apps do not support this approach, because they lack a Client Secret. 
+                     * [We can create one but it still have no permission.]
+                     ******************************************************************************************/
+                    // Config for OAuth client credentials 
+                    ClientCredential clientCred = new ClientCredential(NativeAppConstants.CLIENT_ID,
+                        NativeAppConstants.CLIENT_SECRET);
+                    AuthenticationResult authenticationResult =
+                        await authenticationContext.AcquireTokenAsync(resource,
+                            clientCred);
+                    tokenForNativeApplication = authenticationResult.AccessToken;
+                    break;
+
+                case AuthenticationMethod.Cert:
+                    /******************************************************************************************
+                     * AcquireToken(string resource, ClientAssertionCertificate clientCertificate) works with Web Apps. 
+                     * The disadvantage of this approach is that it is harder to setup initially (PowerShell, certificate creation). 
+                     * The advantage is that once setup it is easy to use. With Native Client Apps it does not work and throws this error: 
+                     * AADSTS50012: Client is public so a 'client_assertion' should not be presented.
+                     * 
+                     * So here I will meet this issue
+                     ******************************************************************************************/
+                    var certFile = Combine(Environment.CurrentDirectory, "Resources", "EXCoreDemoNative.pfx");
+
+                    X509Certificate2 cert = new X509Certificate2(
+                        certFile,
+                        NativeAppConstants.CERT_PASSWORD);
+
+                    ClientAssertionCertificate cac = new ClientAssertionCertificate(
+                        NativeAppConstants.CLIENT_ID, cert);
+
+                    var result = await authenticationContext.AcquireTokenAsync(
+                        resource,
+                        cac);
+                    tokenForNativeApplication = result.AccessToken;
+                    break;
+
+                default:
+                    break;
+            }
             
             return tokenForNativeApplication;
         }
@@ -116,7 +144,7 @@ namespace EXCoreDemo.AccessToken
                 UserModeConstants.CLIENT_ID, redirectUri, new PlatformParameters(PromptBehavior.RefreshSession));
             string TokenForUser = userAuthnResult.AccessToken;
 
-            WriteLine($"\n Welcome {userAuthnResult.UserInfo.GivenName} {userAuthnResult.UserInfo.FamilyName}");
+            WriteLine($"\nWelcome {userAuthnResult.UserInfo.GivenName} {userAuthnResult.UserInfo.FamilyName}");
 
             return TokenForUser;
         }

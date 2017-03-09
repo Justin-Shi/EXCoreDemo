@@ -43,15 +43,15 @@ namespace EXCoreDemo.AccessToken
                 case AuthenticationType.NativeApp:
                     if (resType == ResourceType.AzureGraphApi)
                     {
-                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.AZUREAD_GRAPH_RESOURCE_URI);
+                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.AZUREAD_GRAPH_RESOURCE_URI, auMethod);
                     }
                     else if (resType == ResourceType.MicrosoftGraphApi)
                     {
-                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.MICROSOFT_GRAPH_RESOURCE_URI);
+                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.MICROSOFT_GRAPH_RESOURCE_URI, auMethod);
                     }
                     else
                     {
-                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.EXCHANGE_RESOURCE_URI);
+                        accessToken = await AccessTokenHelper.GetTokenForNativeApplication(ResourceConstants.EXCHANGE_RESOURCE_URI, auMethod);
                     }
                     break;
 

@@ -55,6 +55,7 @@
     <Compile Include="Helper\UrlBase.cs" />
     <Compile Include="Helper\StringExtension.cs" />
     <Compile Include="Helper\HttpRequestHelper.cs" />
+    <Compile Include="MicrosoftGraph\MailFolders.cs" />
     <Compile Include="MicrosoftGraph\Groups.cs" />
     <Compile Include="MicrosoftGraph\Messages.cs" />
     <Compile Include="MicrosoftGraph\MicrosoftGraphBase.cs" />

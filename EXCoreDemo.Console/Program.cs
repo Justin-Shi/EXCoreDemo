@@ -25,7 +25,7 @@ namespace EXCoreDemo.Console
             {
                 case 'w':
                     WriteLine("\nRunning web app-only mode\n\n");
-                    accessToken = AccessTokenFactory.GetAccessTokenAsync(AuthenticationType.WebApp, AuthenticationMethod.Password, ResourceType.MicrosoftGraphApi).Result;
+                    accessToken = AccessTokenFactory.GetAccessTokenAsync(AuthenticationType.WebApp, AuthenticationMethod.Cert, ResourceType.MicrosoftGraphApi).Result;
 
                     Demo(accessToken);
 

@@ -15,6 +15,7 @@ namespace EXCoreDemo.AccessToken
         public const string CLIENT_ID = "b89a5665-af2b-4340-bb08-6ce791311319";
         public const string CLIENT_SECRET = "v7k4Yu8L1Vk9gDowYudb3hEzGlg3s30F68Bn/8BcxG0=";
         public const string AUTH_STRING = ResourceConstants.AUTH_URI + TenantConstants.TENANT_NAME;
+        public const string CERT_PASSWORD = "Pa$$word";
     }
 
     internal class UserModeConstants
